@@ -13,7 +13,7 @@
         
     </style>
 </head>
-<body onload="FocusOnInput()">
+<body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container text-center">
         <h1 style="color:white">CETAK SEP</h1>      

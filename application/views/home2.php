@@ -31,9 +31,9 @@
           <p class="lead">MASUKAN / SCAN NOMOR RUJUKAN</p>
           <div class="col-xs-4"></div>
           <div class="col-xs-4">
-            <?php echo form_open('carirujukan');?>
+            <?php echo form_open('step3');?>
               <div class="form-group">
-                <input type="text" class="form-control" name="kode" id="InputID">
+                <input type="text" class="form-control" name="kode" id="InputID" autofocus>
                 <?php echo form_error('kode'); ?>
                 <?php echo $this->session->flashdata('error'); ?>                
               </div>

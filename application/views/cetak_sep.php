@@ -27,8 +27,17 @@
         }
     </style>
 </head>
-<body onLoad="window.print(); setTimeout(window.close, 0);">
-<section class='content'>
+<script>
+    function onload(){           
+        window.print();
+        window.location.href = "<?php echo site_url('step'); ?>";    
+        window.close();        
+    }   
+</script>
+
+<body onLoad="onload()">
+<!-- <body> -->
+<section class='content' id="content">
     <div class='row'>
         <div class="col-sm-12">
             <div class="box box-primary">
@@ -97,9 +106,9 @@
                                 <td colspan="4"><?= $sep['peserta'];?></td>
                             </tr>
                             <tr>
-                                <td>Asal Faskes Tk. I</td>
-                                <td>:</td>
-                                <td><?= $sep['asal_faskes'];?></td>
+                                <td style="vertical-align: top">Asal Faskes Tk. I</td>
+                                <td style="vertical-align: top">:</td>
+                                <td style="vertical-align: top"><?= $sep['asal_faskes'];?></td>
                                 <td>COB</td>
                                 <td>:</td>
                                 <td colspan="4"><?= $sep['cob'];?></td>
@@ -165,7 +174,6 @@
             </div>
         </div>
     </div>
-</section>
-    
+</section>    
 </body>
 </html>

@@ -52,6 +52,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['default_controller'] = 'cetaksep';
 $route['step'] = 'cetaksep/index';
 $route['step2'] = 'cetaksep/home2';
+$route['step3'] = 'cetaksep/carirujukan';
 $route['cekregister'] = 'cetaksep/cekregister';
 $route['carirujukan'] = 'cetaksep/carirujukan';
 $route['404_override'] = '';

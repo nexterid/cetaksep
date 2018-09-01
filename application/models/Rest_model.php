@@ -22,6 +22,12 @@ class Rest_model extends CI_Model {
         return $result;
     }
 
+    public function CekRujukanInternal($data)
+    {
+        $result=json_decode($this->curl->simple_post($this->API.'/rujukaninternal',$data,array(CURLOPT_BUFFERSIZE => 10)));
+        return $result;
+    }
+
     public function InsertSep($dataJson)
     {
         $this->curl->create($this->API.'/sep/insert');       
@@ -42,6 +48,12 @@ class Rest_model extends CI_Model {
         $result=json_decode($this->curl->simple_post($this->API.'/updateregister',$data,array(CURLOPT_BUFFERSIZE => 10)));
         return $result;
        
+    }
+
+    public function faskes($kode_faskes,$no)
+    {
+        $result=json_decode($this->curl->simple_get($this->API.'/referensi/faskes/'.$kode_faskes.'/'.$no));
+        return $result;
     }
 
 }
