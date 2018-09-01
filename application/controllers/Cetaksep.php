@@ -183,11 +183,31 @@ class Cetaksep extends CI_Controller {
 		$datasep['t_sep']['cob']=array(
 			'cob'=>'0',
 		);
-		$datasep['t_sep']['jaminan']=array(
-			'lakaLantas'=>'0',
-			'penjamin'=>'0',
-			'lokasiLaka'=>'0',
+		$datasep['t_sep']['katarak']=array(
+			"katarak"=>'0'
 		);
+		$datasep['t_sep']['jaminan']=array(
+			'lakaLantas'=>'0'			
+		);
+		$datasep['t_sep']['jaminan']['penjamin']=array(
+			'penjamin'=>'0',
+			"tglKejadian"=>"000-00-00",
+            "keterangan"=> "0"
+		);
+		$datasep['t_sep']['jaminan']['penjamin']['suplesi']=array(
+			"suplesi"=> "0",
+            "noSepSuplesi"=> "0"
+		);
+		$datasep['t_sep']['jaminan']['penjamin']['suplesi']['lokasiLaka']=array(
+			"kdPropinsi"=> "0",
+            "kdKabupaten"=> "0000",
+            "kdKecamatan"=> "0000"
+		);
+		$datasep['t_sep']['skdp']=array(
+			"noSurat"=> "000000",
+			"kodeDPJP"=>"00000"
+		);
+		
 		$data['request']=$datasep;
 		$dataJson=json_encode($data);			
 		$result_sep=$this->rest_model->InsertSep($dataJson);
