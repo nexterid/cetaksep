@@ -90,20 +90,30 @@ class Cetaksep extends CI_Controller {
 				$cek_rujukan=$this->rest_model->CekRujukanInternal($data);		
 				if($cek_rujukan->metaData->code=='200'){	
 					if($cek_rujukan->response->rujukan->peserta->noKartu==$this->session->userdata('no_kartu')){
-						$this->session->set_userdata('asal_faskes',$cek_rujukan->response->rujukan->provPerujuk->nama);	
-							$no_rujukan = substr($no_rujukan,6);	
-							$catatan='SKDP TERLAMPIR DARI RSUD KRATON';						
-							if(!empty($this->session->userdata('no_sep'))){
-								$no_sep=$this->session->userdata('no_sep');
-								$result_sep=$this->rest_model->CariSep($no_sep);							
-								if($result_sep->metaData->code=='200'){
-									$this->cetaksep_ulang($result_sep);
-								}else{
-									$this->insertsep($cek_rujukan,$no_rujukan,$catatan);
+						$norujukanbpjs=$cek_rujukan->response->rujukan->noRujukanBpjs;
+						if($this->rest_model->CekRujukan($norujukanbpjs)){
+							if($cek_rujukan->metaData->code=='200'){
+								$this->session->set_userdata('asal_faskes',$cek_rujukan->response->rujukan->provPerujuk->nama);	
+								$no_rujukan = substr($no_rujukan,6);	
+								$catatan='SKDP TERLAMPIR DARI RSUD KRATON';						
+								if(!empty($this->session->userdata('no_sep'))){
+									$no_sep=$this->session->userdata('no_sep');
+									$result_sep=$this->rest_model->CariSep($no_sep);							
+									if($result_sep->metaData->code=='200'){
+										$this->cetaksep_ulang($result_sep);
+									}else{
+										$this->insertsep_skdp($cek_rujukan,$no_rujukan,$catatan);
+									}
+								}else{						
+									$this->insertsep_skdp($cek_rujukan,$no_rujukan,$catatan);
 								}
-							}else{						
-								$this->insertsep($cek_rujukan,$no_rujukan,$catatan);
+							}else{
+								$pesan="<p class='ex'>Nomor Rujukan BPJS Awal Tidak Ditemukan <br>Silahkan Hubungi Petugas Untuk Pembuatan SEP</p>";
+								$this->session->set_flashdata('error',$pesan);
+								redirect('step2');
 							}
+						}
+							
 					}else{
 						$pesan="<p class='ex'>Nomor kartu rujukan tidak sesaui dengan nomor kartu Pasien</p>";
 						$this->session->set_flashdata('error',$pesan);
@@ -118,25 +128,32 @@ class Cetaksep extends CI_Controller {
 			}else{
 				$cek_rujukan=$this->rest_model->CekRujukan($no_rujukan);		
 				if($cek_rujukan->metaData->code=='200'){
-					if($cek_rujukan->response->rujukan->peserta->noKartu==$this->session->userdata('no_kartu')){
-						$this->session->set_userdata('asal_faskes',$cek_rujukan->response->rujukan->provPerujuk->nama);	
-						$catatan='';		
-						if(!empty($this->session->userdata('no_sep'))){
-							$no_sep=$this->session->userdata('no_sep');
-							$result_sep=$this->rest_model->CariSep($no_sep);
-							if($result_sep->metaData->code=='200'){
-								$this->cetaksep_ulang($result_sep);
-							}else{
-								$this->insertsep($cek_rujukan,$no_rujukan,$catatan);
-							}
-						}else{
-							$this->insertsep($cek_rujukan,$no_rujukan,$catatan);
-						}	
-					}else{
-						$pesan="<p class='ex'>Nomor kartu rujukan tidak sesaui dengan nomor kartu Pasien</p>";
+					$cek_rujukanbpjs=$this->rest_model->CekRujukanBpjs($no_rujukan);
+					if($cek_rujukanbpjs->metaData->code=='200'){
+						$pesan="<p class='ex'>".$cek_rujukanbpjs->metaData->message."</p>";
 						$this->session->set_flashdata('error',$pesan);
 						redirect('step2');
-					}
+					}else{
+						if($cek_rujukan->response->rujukan->peserta->noKartu==$this->session->userdata('no_kartu')){
+							$this->session->set_userdata('asal_faskes',$cek_rujukan->response->rujukan->provPerujuk->nama);	
+							$catatan='';		
+							if(!empty($this->session->userdata('no_sep'))){
+								$no_sep=$this->session->userdata('no_sep');
+								$result_sep=$this->rest_model->CariSep($no_sep);
+								if($result_sep->metaData->code=='200'){
+									$this->cetaksep_ulang($result_sep);
+								}else{
+									$this->insertsep($cek_rujukan,$no_rujukan,$catatan);
+								}
+							}else{
+								$this->insertsep($cek_rujukan,$no_rujukan,$catatan);
+							}	
+						}else{
+							$pesan="<p class='ex'>Nomor kartu rujukan tidak sesaui dengan nomor kartu Pasien</p>";
+							$this->session->set_flashdata('error',$pesan);
+							redirect('step2');
+						}
+					}					
 							
 				}else{			
 					$pesan="<p class='ex'>Nomor ".$cek_rujukan->metaData->message."</p>";
@@ -168,7 +185,7 @@ class Cetaksep extends CI_Controller {
 			'catatan'=>$catatan,
 			'diagAwal'=>$cek_rujukan->response->rujukan->diagnosa->kode,
 			'noTelp'=>$this->session->userdata('no_telp'),
-			'user'=>'admin',
+			'user'=>'pasien',
 		);
 		$datasep['t_sep']['rujukan']=array(
 			'asalRujukan'=>$asal_rujukan,
@@ -228,6 +245,88 @@ class Cetaksep extends CI_Controller {
 		}
 			// echo $dataJson;
 	}
+
+	public function insertsep_skdp($cek_rujukan,$no_rujukan,$catatan)
+	{			
+		$kode_faskes=$cek_rujukan->response->rujukan->provPerujuk->kode;
+		$cek_faskes = $this->rest_model->faskes($kode_faskes,1);
+		$no_surat='0'.substr($no_rujukan, 0, 5);
+		if($cek_faskes->metaData->code=='200'){
+			$asal_rujukan='1';
+		}else{
+			$asal_rujukan='2';
+		}
+		$datasep['t_sep']=array(
+			'noKartu'=>$cek_rujukan->response->rujukan->peserta->noKartu,
+			'tglSep'=>date('Y-m-d'),
+			'ppkPelayanan'=>'1105R001',
+			'jnsPelayanan'=>'2',
+			'klsRawat'=>'3',
+			'noMR'=>$this->session->userdata('no_rm'),				
+			'catatan'=>$catatan,
+			'diagAwal'=>$cek_rujukan->response->rujukan->diagnosa->kode,
+			'noTelp'=>$this->session->userdata('no_telp'),
+			'user'=>'pasien',
+		);
+		$datasep['t_sep']['rujukan']=array(
+			'asalRujukan'=>$asal_rujukan,
+			'tglRujukan'=>$cek_rujukan->response->rujukan->tglKunjungan,
+			'noRujukan'=>$cek_rujukan->response->rujukan->noRujukanBpjs,
+			'ppkRujukan'=>$cek_rujukan->response->rujukan->provPerujuk->kode,
+		);	
+		$datasep['t_sep']['poli']=array(
+			'tujuan'=>$cek_rujukan->response->rujukan->poliRujukan->kode,
+			'eksekutif'=>'0',
+		);	
+		$datasep['t_sep']['cob']=array(
+			'cob'=>'0',
+		);
+		$datasep['t_sep']['katarak']=array(
+			"katarak"=>'0'
+		);
+		$datasep['t_sep']['jaminan']=array(
+			'lakaLantas'=>'0'			
+		);
+		$datasep['t_sep']['jaminan']['penjamin']=array(
+			'penjamin'=>'0',
+			"tglKejadian"=>"000-00-00",
+            "keterangan"=> "0"
+		);
+		$datasep['t_sep']['jaminan']['penjamin']['suplesi']=array(
+			"suplesi"=> "0",
+            "noSepSuplesi"=> "0"
+		);
+		$datasep['t_sep']['jaminan']['penjamin']['suplesi']['lokasiLaka']=array(
+			"kdPropinsi"=> "0",
+            "kdKabupaten"=> "0000",
+            "kdKecamatan"=> "0000"
+		);
+		$datasep['t_sep']['skdp']=array(
+			"noSurat"=> $no_surat,
+			"kodeDPJP"=>$cek_rujukan->response->rujukan->kodeDPJP
+		);
+		
+		$data['request']=$datasep;
+		$dataJson=json_encode($data);			
+		$result_sep=$this->rest_model->InsertSep($dataJson);
+		if($result_sep->metaData->code=='200'){
+			$data=array(
+				'no_RM'=>$this->session->userdata('no_rm'),
+				'no_reg'=>$this->session->userdata('no_reg'),
+				'no_sep'=>$result_sep->response->sep->noSep
+			);	
+			$this->rest_model->UpdateRegister($data);				
+			$this->cetaksep_baru($result_sep);	
+		
+		}else{
+			$pesan="<p class='ex'>Nomor ".$result_sep->metaData->message."</p>";
+			$this->session->set_flashdata('error',$pesan);
+			redirect('step2');
+			// print_r($result_sep);
+		}
+		
+	}
+
 
 	public function cetaksep_ulang($result_sep)
 	{		
@@ -307,19 +406,20 @@ class Cetaksep extends CI_Controller {
 
 	function testkode()
 	{		
-		// $kode= "20180700003/SKU/MAT/0718";
-		$kode="0167U0060216Y000109";
+		$kode="20180807764/SKU/OBG/0818";
+		// $kode="0167U0060216Y000109";
 		// if (preg_match("/^([0-9])*./([a-z])(\/[a-z])(0-9)$/i", $kode, $match)){
 		// 	echo $kode;
 		// }else{
 		// 	print "tidak sesuai";
 		// }
-		if(strpos($kode,'/')!=null){
-			echo "kode cocok ".$kode;
-		}else{
-			print "kode tidak sesuai " .$kode;
-		}
-			
+		// if(strpos($kode,'/')!=null){
+		// 	echo "kode cocok ".$kode;
+		// }else{
+		// 	print "kode tidak sesuai " .$kode;
+		// }
+		$hasil='0'.substr($kode, 6, 5);
+		echo $kode.'<br>'.$hasil;
 			
 	}
 

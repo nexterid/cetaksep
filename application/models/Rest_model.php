@@ -22,6 +22,12 @@ class Rest_model extends CI_Model {
         return $result;
     }
 
+    public function CekRujukanBpjs($no_rujukan)
+    {
+        $result=json_decode($this->curl->simple_get($this->API.'/rujukan/bpjs/'.$no_rujukan));
+        return $result;
+    }
+
     public function CekRujukanInternal($data)
     {
         $result=json_decode($this->curl->simple_post($this->API.'/rujukaninternal',$data,array(CURLOPT_BUFFERSIZE => 10)));
