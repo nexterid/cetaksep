@@ -7,7 +7,7 @@ class Rest_model extends CI_Model {
 
     public function __construct() {
         parent::__construct();
-        $this->API="http://192.168.0.229";
+        $this->API="http://10.10.11.15";
     }   
     
     public function CekRegister($no_rm)

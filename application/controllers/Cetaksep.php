@@ -129,7 +129,7 @@ class Cetaksep extends CI_Controller {
 				$cek_rujukan=$this->rest_model->CekRujukan($no_rujukan);		
 				if($cek_rujukan->metaData->code=='200'){
 					$cek_rujukanbpjs=$this->rest_model->CekRujukanBpjs($no_rujukan);
-					if($cek_rujukanbpjs->metaData->code=='200'){
+					if($cek_rujukanbpjs->metaData->code=='201'){
 						$pesan="<p class='ex'>".$cek_rujukanbpjs->metaData->message."</p>";
 						$this->session->set_flashdata('error',$pesan);
 						redirect('step2');
